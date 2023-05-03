@@ -3,7 +3,7 @@ const {Pet} = require("./Pet")
 
 const seed = async () => {
     await sequelize.sync({ force: true }); // recreate db
-    await Pet.bulkCreate([{name:"rusty", species: "dog", colour:"red-brown", date_arriving:"13-5-23", date_leaving:"15-5-23"}]);
+    await Pet.bulkCreate([{name:"rusty", species: "dog", age:5 ,colour:"red-brown", date_arriving:"2023-05-13", date_leaving:"2023-05-15"}]);
   };
 
 seed()
@@ -16,3 +16,14 @@ seed()
   .finally(() => {
     sequelize.close();
   });
+
+
+//   {
+//
+//         "name":"fluffy",
+//         "age": 2,
+//         "species":"cat",
+//         "colour":"white",
+//         "date_arriving": "2023-06-02",
+//         "date_leaving": "2023-06-04"
+// }

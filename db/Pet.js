@@ -6,7 +6,7 @@ const Pet = sequelize.define('pet', {
   colour: Sequelize.STRING,
   age: Sequelize.INTEGER,
   date_arriving: Sequelize.DATE,
-  date_leaving: Sequelize.DATE
+  date_leaving: Sequelize.DATE,
 });
 
 module.exports = { Pet };

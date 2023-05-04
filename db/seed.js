@@ -1,9 +1,12 @@
 const {sequelize} = require('./db');
-const {Pet} = require("./Pet")
+const {Pet, User} = require("./index")
 
 const seed = async () => {
     await sequelize.sync({ force: true }); // recreate db
-    await Pet.bulkCreate([{name:"rusty", species: "dog", age:5 ,colour:"red-brown", date_arriving:"2023-05-13", date_leaving:"2023-05-15"}]);
+    let user = await User.create({name:"jim",password: "$2b$10$F0e.8k.8x6UHC3FysbwVQ.yaO3zTY05VNFYPtCk9BKAsgGaKPwuTm"})
+    let pet = await Pet.bulkCreate([{name:"rusty", species: "dog", age:5 ,colour:"red-brown", date_arriving:"2023-05-13", date_leaving:"2023-05-15"}]);
+    await user.setPets(pet)
+
   };
 
 seed()

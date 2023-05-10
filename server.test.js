@@ -93,6 +93,7 @@ describe("Routes", ()=>{
         const response = (await request(app).delete("/pet").send({name:"bubbles"}).set({Authorization: `Bearer ${auth.text}`}))
 
         expect(response.text).toBe("bubbles's booking has been cancelled")
+        expect(await Pet.findOne({where:{name:"bubbles"}})).toBe(null)
     })
 
     it("does not allow a user to delete another users booking", async()=>{
@@ -142,5 +143,50 @@ describe("Accounts", ()=>{
     it("gives the correct error message when the user gives the wrong password", async()=>{
         const auth = await request(app).post("/login").send({username:"test user", password:"testpassword"})
         expect(auth.text).toBe("Unauthorized")
+    })
+})
+
+describe("Admin", ()=>{
+    let auth;
+    beforeAll(async()=>{
+        auth = await request(app).post("/login").send({username:"jim", password:"password1"})
+    })
+
+    it("allows an account to be set as admin", async()=>{
+        const user = await User.findByPk(1)
+        expect(user.isAdmin).toBe(true)
+    })
+
+    it("allows an admin to fetch all entries regardless of owner", async()=>{
+        const response = await request(app).get("/pet").set({Authorization: `Bearer ${auth.text}`})
+        expect(response.body[0].user.id).toBe(1)
+        expect(response.body[1].user.id).toBe(2)
+        expect(response.body.length).toBe(4)
+    })
+
+    it("allows an admin to get any pet entry by name", async()=>{
+        const response = await request(app).get("/pet/fluffy").set({Authorization: `Bearer ${auth.text}`})
+        expect(response.body.name).toBe("fluffy")
+    })
+
+    it("allows an admin to get all entires that cover the given date", async()=>{
+        const response = await request(app).get("/pet/date/2023-07-25").set({Authorization: `Bearer ${auth.text}`})
+        expect(response.body.length).toBe(2)
+        expect(response.body[0].name).toBe("fluffy")
+        expect(response.body[1].name).toBe("patch")
+    })
+
+    it("allows an admin to update any booking", async()=>{
+        const response = (await request(app).put("/pet").send({name:"rusty", date_arriving:"2023-06-06", date_leaving:"2023-06-08"}).set({Authorization: `Bearer ${auth.text}`}))
+
+        let pet = await Pet.findOne({where:{name:"rusty"}})
+        expect(pet.date_arriving).toEqual(new Date("2023-06-06"))
+    })
+
+    it("allows an admin to delete any booking", async()=>{
+        const response = (await request(app).delete("/pet").send({name:"patch"}).set({Authorization: `Bearer ${auth.text}`}))
+
+        expect(response.text).toBe("patch's booking has been cancelled")
+        expect(await Pet.findOne({where:{name:"patch"}})).toBe(null)
     })
 })

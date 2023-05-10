@@ -2,7 +2,6 @@ const express = require("express")
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const app = express()
-const { sequelize } = require('./db/db');
 const {Pet, User} = require("./db");
 const { Op } = require("sequelize");
 require("dotenv").config(".env")
@@ -10,15 +9,21 @@ require("dotenv").config(".env")
 app.use(express.json())
 
 const authorize = async(req,res,next)=>{
-    let auth = req.header("Authorization")
-    if (!auth) return res.sendStatus(403)
-    const [,token] = auth.split(" ")
-    const user = jwt.verify(token, process.env.JWT_SECRET)
-    if (!user){
-        return res.status(403).send("You must log in to access this API")
-    }else{
-        req.user = user
-        next()
+    try{
+        let auth = req.header("Authorization")
+        if (!auth) return res.sendStatus(403)
+        const [,token] = auth.split(" ")
+        if(!token) return res.sendStatus(403)
+        const user = jwt.verify(token, process.env.JWT_SECRET)
+        if (!user){
+            return res.status(403).send("You must log in to access this API")
+        }else{
+            req.user = user
+            next()
+        }
+    }
+    catch(error){
+        res.status(500).send(error)
     }
 }
 
@@ -31,6 +36,7 @@ app.post("/login", async(req,res)=>{
             let {id, username, password} = user
             if (await bcrypt.compare(req.body.password, password)){
                 let token = jwt.sign({id, username}, process.env.JWT_SECRET)
+                // console.log("here",token)
                 res.send(token)
             }else{
                 res.sendStatus(401)
@@ -56,22 +62,33 @@ app.post("/register" ,async(req,res)=>{
 
 app.get("/pet",authorize, async(req,res)=>{
     try{
-        const pets = await Pet.findAll({where:{ownerId:req.user.id}})
+        const pets = await Pet.findAll({where:{ownerId:req.user.id} , include :{
+            model: User, 
+            attributes:['id', 'username']
+        }})
         res.status(200).send(pets)
-    }catch{
+    }catch(error){
+        console.log(error)
         res.sendStatus(500)
     }
 })
 
 app.get("/pet/:name", authorize, async(req,res)=>{
     try{
-        console.log("name", req.params.name)
-        const pets = await Pet.findOne({where:{
+        const pet = await Pet.findOne({where:{
             name: req.params.name,
             ownerId:req.user.id
+        },
+        include :{
+            model: User, 
+            attributes:['id', 'username']
         }})
-        console.log(pets, "jshdfkjshdkjfsdlfjksdjnfksmdnfsdfsfsdf")
-        res.status(200).send(pets)
+        if (pet){
+            res.status(200).send(pet)
+        }else{
+            res.status(404).send(`you have no booking for a pet with the name ${req.params.name}`)
+        }
+        
     }catch(error){
         console.log(error)
         res.sendStatus(500)
@@ -84,8 +101,17 @@ app.get("/pet/date/:date", authorize, async(req,res)=>{
             date_arriving: {[Op.lt]: req.params.date},
             date_leaving :{[Op.gt]: req.params.date},
             ownerId:req.user.id
+        },
+        include :{
+            model: User, 
+            attributes:['id', 'username']
         }})
-        res.send(pets)
+        if (pets.length >0 ){
+            res.send(pets)
+        }else{
+            res.status(404).send("you have no bookings that cover the given date")
+        }
+        
     }
     catch(error){
         console.log(error)
@@ -137,8 +163,4 @@ app.delete("/pet", authorize, async(req,res)=>{
     }
 })
 
-
-app.listen(3000, () => {
-    sequelize.sync({ force: false });
-    console.log(`Pets are ready at http://localhost:3000`);
-  });
+module.exports = {app}

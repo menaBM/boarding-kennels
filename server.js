@@ -80,7 +80,7 @@ app.get("/pet",authorize, async(req,res)=>{
 
 app.get("/pet/:name", authorize, async(req,res)=>{
     try{
-        const pet = await Pet.findOne({where:{
+        const pet = await Pet.findAll({where:{
             name: req.params.name,
             ownerId:{
                 [Op.substring]: req.user.isAdmin?"":req.user.id
@@ -90,7 +90,7 @@ app.get("/pet/:name", authorize, async(req,res)=>{
             model: User, 
             attributes:['id', 'username']
         }})
-        if (pet){
+        if (pet.length>0){
             res.status(200).send(pet)
         }else{
             res.status(404).send(`you have no booking for a pet with the name ${req.params.name}`)
@@ -130,7 +130,7 @@ app.get("/pet/date/:date", authorize, async(req,res)=>{
 
 app.post("/pet",authorize,  async(req,res)=>{
     try{
-        if ( (await Pet.findAll({where:{name:req.body.name}})).length === 0){
+        if ( (await Pet.findAll({where:{name:req.body.name, ownerId: req.user.id}})).length === 0){
             const pet = await Pet.create(req.body)
             let owner = await User.findByPk(req.user.id)
             owner.addPets(pet)

@@ -20,8 +20,8 @@ describe("Routes", ()=>{
 
     it("fetches the pet associated with the user with the given name", async ()=>{
         const response = await request(app).get("/pet/fluffy").set({Authorization: `Bearer ${auth.text}`})
-        expect(response.body.length).toBe(undefined)
-        expect(response.body.name).toBe("fluffy")
+        expect(response.body.length).toBe(1)
+        expect(response.body[0].name).toBe("fluffy")
     })
 
     it("fetches the pets associated with the user that whose bookings include the given day", async()=>{
@@ -37,7 +37,7 @@ describe("Routes", ()=>{
         const response3 = await request(app).get("/pet/date/2023-07-25").set({Authorization: `Bearer ${auth.text}`})
 
         expect(response1.body[0]).toEqual(expect.objectContaining({user:{username:"test user", id:2}}))
-        expect(response2.body).toEqual(expect.objectContaining({user:{username:"test user", id:2}}))
+        expect(response2.body[0]).toEqual(expect.objectContaining({user:{username:"test user", id:2}}))
         expect(response3.body[0]).toEqual(expect.objectContaining({user:{username:"test user", id:2}}))
     })
 
@@ -166,7 +166,7 @@ describe("Admin", ()=>{
 
     it("allows an admin to get any pet entry by name", async()=>{
         const response = await request(app).get("/pet/fluffy").set({Authorization: `Bearer ${auth.text}`})
-        expect(response.body.name).toBe("fluffy")
+        expect(response.body[0].name).toBe("fluffy")
     })
 
     it("allows an admin to get all entires that cover the given date", async()=>{

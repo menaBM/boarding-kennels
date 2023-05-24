@@ -1,0 +1,15 @@
+.App{
+  background-color: #282c34;
+  /* height: 100%; */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+.page-container{
+  height: 100%;
+}

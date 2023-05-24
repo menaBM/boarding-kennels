@@ -1,0 +1,61 @@
+.home-page{
+    display: flex;
+    height: 100%;
+    min-height: 80vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* font-size: calc(10px + 2vmin); */
+    color: white;
+
+    .home{
+        height: 100%;
+        
+        .bookings{
+            margin-top: 5em;
+            min-width: 60vh;
+            margin-bottom: 8em;
+            .title{
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+
+                div{
+                    display: flex;
+                    gap: 0.2em;
+                    width: 16em;
+                    justify-content: space-between;
+                 }
+                .filter-choice{
+                    height: max-content;
+                    width: 10em;
+                }
+            }
+            
+            .booking{
+                margin-top: 2em;
+                margin-bottom: 2em;
+                .name{
+                    text-align: center;
+                   
+                }
+                .grid{
+                    display: flex;
+                    justify-content: space-between;
+                    padding-left: 2em;
+                    padding-right: 2em;
+                }
+                .buttons{
+                    display: flex;
+                    justify-content: center;
+                    gap: 1em;
+                    button{
+                        width: 5em;
+                    }
+                }
+                
+            }
+        }
+        
+    }
+}

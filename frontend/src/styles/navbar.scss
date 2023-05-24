@@ -1,0 +1,20 @@
+nav{
+    margin-top: 0;
+    color: white;
+    background-color: rgb(81, 88, 93);
+    padding: 2em;
+    display: flex;
+    justify-content: space-between;
+
+    section{
+        display: flex;
+        gap: 2em;
+        .item{
+            color: white;
+        }
+    }
+
+    p{
+        margin: 0;
+    }
+}

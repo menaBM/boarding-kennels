@@ -37,26 +37,30 @@ app.post("/login", async(req,res)=>{
             let {id, username, password} = user
             if (await bcrypt.compare(req.body.password, password)){
                 let token = jwt.sign({id, username}, process.env.JWT_SECRET)
-                res.send(token)
+                res.send({"token":token})
             }else{
                 res.sendStatus(401)
             }
         }
     }catch(error){
         console.log(error)
-        res.send(500)
+        res.sendStatus(500)
     }
 })
 
 app.post("/register" ,async(req,res)=>{
     try{
-        let hash = await bcrypt.hash(req.body.password, 10)
-        let {id, username} = await User.create({username:req.body.username, password:hash, isAdmin:false})
-        let token = jwt.sign({id, username}, process.env.JWT_SECRET)
-        res.send(token)
+        if (!(await User.findOne({where: {username:req.body.username}}))){
+            let hash = await bcrypt.hash(req.body.password, 10)
+            let {id, username} = await User.create({username:req.body.username, password:hash, isAdmin:false})
+            let token = jwt.sign({id, username}, process.env.JWT_SECRET)
+            res.send({"token":token})
+        }else{
+            res.status(400).send("please choose another username")
+        }
     }catch(error){
         console.log(error)
-        res.send(500)
+        res.sendStatus(500)
     }
 })
 
@@ -91,6 +95,7 @@ app.get("/pet/:name", authorize, async(req,res)=>{
             attributes:['id', 'username']
         }})
         if (pet.length>0){
+            console.log("pet", pet)
             res.status(200).send(pet)
         }else{
             res.status(404).send(`you have no booking for a pet with the name ${req.params.name}`)
@@ -105,8 +110,8 @@ app.get("/pet/:name", authorize, async(req,res)=>{
 app.get("/pet/date/:date", authorize, async(req,res)=>{
     try{
         const pets = await Pet.findAll({where:{
-            date_arriving: {[Op.lt]: req.params.date},
-            date_leaving :{[Op.gt]: req.params.date},
+            date_arriving: {[Op.lte]: req.params.date},
+            date_leaving :{[Op.gte]: req.params.date},
             ownerId:{
                 [Op.substring]: req.user.isAdmin?"":req.user.id
               }
@@ -117,6 +122,7 @@ app.get("/pet/date/:date", authorize, async(req,res)=>{
         }})
         if (pets.length >0 ){
             res.send(pets)
+            // console.log(pets)
         }else{
             res.status(404).send("you have no bookings that cover the given date")
         }
@@ -134,7 +140,7 @@ app.post("/pet",authorize,  async(req,res)=>{
             const pet = await Pet.create(req.body)
             let owner = await User.findByPk(req.user.id)
             owner.addPets(pet)
-            res.send(`${req.body.name} has been booked into the kennels`)
+            res.send({message: `${req.body.name} has been booked into the kennels`})
         }else{
             res.status(400).send("a pet has already been booked in under this name")
         }
@@ -152,7 +158,7 @@ app.put("/pet",authorize, async(req,res)=>{
         if (pet){
             if (req.body.date_arriving) await pet.update({date_arriving:req.body.date_arriving})
             if (req.body.date_leaving) await pet.update({date_leaving:req.body.date_leaving})
-            res.send(`${req.body.name}'s booking has been updated`)
+            res.send({"message":`${req.body.name}'s booking has been updated`})
         }else{
             res.send("no booking found")
         }
@@ -163,6 +169,7 @@ app.put("/pet",authorize, async(req,res)=>{
 
 app.delete("/pet", authorize, async(req,res)=>{
     try{
+        console.log("deleting")
         let pet = await Pet.destroy({where:{name:req.body.name,ownerId:{
             [Op.substring]: req.user.isAdmin?"":req.user.id
           }}})

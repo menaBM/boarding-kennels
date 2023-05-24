@@ -15,7 +15,8 @@ const seed = async () => {
 
   };
 
-  // seed()
+  seed()
+
   // .then(() => {
   //   console.log('Seeding success');
   // })

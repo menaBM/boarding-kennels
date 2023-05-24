@@ -125,6 +125,7 @@ export default function Home(){
                                     <p>Age: {booking.age}</p>
                                 </div>
                                 <div className="details">
+                                    <p>Owner: {booking.user.username}</p>
                                     <p>Arriving: {booking.date_arriving.slice(0,10)}</p>
                                     <p>Leaving: {booking.date_leaving.slice(0,10)}</p>
                                 </div>

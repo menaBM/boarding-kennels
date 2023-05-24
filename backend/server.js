@@ -37,7 +37,7 @@ app.post("/login", async(req,res)=>{
             let {id, username, password} = user
             if (await bcrypt.compare(req.body.password, password)){
                 let token = jwt.sign({id, username}, process.env.JWT_SECRET)
-                res.send({"token":token})
+                res.send({token:token})
             }else{
                 res.sendStatus(401)
             }
@@ -54,7 +54,7 @@ app.post("/register" ,async(req,res)=>{
             let hash = await bcrypt.hash(req.body.password, 10)
             let {id, username} = await User.create({username:req.body.username, password:hash, isAdmin:false})
             let token = jwt.sign({id, username}, process.env.JWT_SECRET)
-            res.send({"token":token})
+            res.send({token:token})
         }else{
             res.status(400).send("please choose another username")
         }
@@ -95,7 +95,6 @@ app.get("/pet/:name", authorize, async(req,res)=>{
             attributes:['id', 'username']
         }})
         if (pet.length>0){
-            console.log("pet", pet)
             res.status(200).send(pet)
         }else{
             res.status(404).send(`you have no booking for a pet with the name ${req.params.name}`)
@@ -122,7 +121,6 @@ app.get("/pet/date/:date", authorize, async(req,res)=>{
         }})
         if (pets.length >0 ){
             res.send(pets)
-            // console.log(pets)
         }else{
             res.status(404).send("you have no bookings that cover the given date")
         }
@@ -169,7 +167,6 @@ app.put("/pet",authorize, async(req,res)=>{
 
 app.delete("/pet", authorize, async(req,res)=>{
     try{
-        console.log("deleting")
         let pet = await Pet.destroy({where:{name:req.body.name,ownerId:{
             [Op.substring]: req.user.isAdmin?"":req.user.id
           }}})

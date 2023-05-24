@@ -13,11 +13,6 @@ export default function Login() {
     const navigate = useNavigate()
 
     function onSubmit(form){
-        //can you have the same animal with multiple bokings?
-        // admins can see username next to booking?
-        //toggle admin view
-        //homepage pagination
-        //make token persist refreshes
       
         fetch(`http://localhost:3000/${mode}`, {
             method: 'POST', 
